@@ -6,6 +6,7 @@ import {
   BarChart3,
   User,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 
 // FIXED: removed @ alias

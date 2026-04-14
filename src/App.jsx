@@ -6,20 +6,20 @@ import { Toaster as Sonner } from "./components/ui/sonner";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "\./contexts/ThemeContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 // IMPORTANT: use default import (most cases)
-import ProtectedRoute from "\./components/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
-import LoginPage from "\./pages/LoginPage";
-import SignupPage from "\./pages/SignupPage";
-import DashboardPage from "\./pages/DashboardPage";
-import CreateQuizPage from "\./pages/CreateQuizPage";
-import JoinQuizPage from "\./pages/JoinQuizPage";
-import QuizAttemptPage from "\./pages/QuizAttemptPage";
-import LeaderboardPage from "\./pages/LeaderboardPage";
-import AnalyticsPage from "\./pages/AnalyticsPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import DashboardPage from "./pages/DashboardPage";
+import CreateQuizPage from "./pages/CreateQuizPage";
+import JoinQuizPage from "./pages/JoinQuizPage";
+import QuizAttemptPage from "./pages/QuizAttemptPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyQuizzesPage from "./pages/MyQuizzesPage";
 import QuizResultsPage from "./pages/QuizResultsPage";

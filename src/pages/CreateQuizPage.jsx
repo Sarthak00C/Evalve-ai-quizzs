@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { TrendingUp } from "lucide-react";
 
 // FIXED: removed @ alias
 import { useAuth } from "../contexts/AuthContext";
@@ -27,7 +28,14 @@ import {
 } from "../components/ui/select";
 
 import { useToast } from "../hooks/use-toast";
-import { Loader2, Sparkles, Plus, Trash2 } from "lucide-react";
+
+import { 
+  Plus, 
+  Trash2, 
+  Edit,  
+  Sparkles, 
+  Loader2 
+} from "lucide-react";
 
 function CreateQuizPage() {
   const { user } = useAuth();
@@ -81,7 +89,7 @@ function CreateQuizPage() {
     try {
       const data = await apiClient.generateQuiz(
         aiPrompt,
-        topic,
+        "",        // don't send topic separately, let the prompt drive it
         difficulty,
         5
       );

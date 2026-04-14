@@ -7,9 +7,11 @@ class APIClient {
     __publicField(this, "token", localStorage.getItem("auth_token"));
   }
   getHeaders() {
+  const token = localStorage.getItem("auth_token"); // 🔥 always fresh
+
     return {
       "Content-Type": "application/json",
-      ...this.token && { Authorization: `Bearer ${this.token}` }
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
   setToken(token) {

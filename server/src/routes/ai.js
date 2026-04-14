@@ -1,82 +1,141 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-// Generate quiz with AI (Google Gemini)
-router.post('/generate-quiz', authenticateToken, [
+// ✅ Groq setup
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+router.post(
+  '/generate-quiz',
+  authenticateToken,
+  [
     body('prompt').trim().notEmpty().withMessage('Prompt is required'),
     body('topic').optional({ checkFalsy: true }).trim(),
-    body('difficulty').optional({ checkFalsy: true }).isIn(['easy', 'medium', 'hard']).withMessage('Difficulty must be easy, medium, or hard'),
-    body('count').optional({ checkFalsy: true }).isInt({ min: 1, max: 10 }).withMessage('Count must be between 1 and 10'),
-], async (req, res) => {
+    body('difficulty')
+      .optional({ checkFalsy: true })
+      .isIn(['easy', 'medium', 'hard'])
+      .withMessage('Difficulty must be easy, medium, or hard'),
+    body('count')
+      .optional({ checkFalsy: true })
+      .isInt({ min: 1, max: 10 })
+      .withMessage('Count must be between 1 and 10'),
+  ],
+  async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+      // ✅ Validation
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
-        const { prompt, topic, difficulty, count } = req.body;
-        const resolvedTopic = topic || 'general knowledge';
-        const resolvedDifficulty = difficulty || 'medium';
-        const resolvedCount = parseInt(count) || 5;
+      const { prompt, topic, difficulty, count } = req.body;
 
-        const googleApiKey = process.env.GOOGLE_API_KEY;
-        if (!googleApiKey) {
-            return res.status(500).json({ error: 'Google API key not configured' });
-        }
+      const resolvedTopic = topic || prompt;
+      const resolvedDifficulty = difficulty || 'medium';
+      const resolvedCount = parseInt(count) || 5;
 
-        const genAI = new GoogleGenerativeAI(googleApiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+      // ✅ Same strong prompt
+      const finalPrompt = `
+You are a STRICT quiz generator.
 
-        const fullPrompt = `You are a quiz question generator. Generate exactly ${resolvedCount} multiple choice questions.
-Topic: ${resolvedTopic}
-Difficulty: ${resolvedDifficulty}
-User request: ${prompt || `Generate ${resolvedCount} quiz questions about ${resolvedTopic}`}
+TASK:
+Generate exactly ${resolvedCount} multiple-choice questions based ONLY on the given topic.
 
-Respond ONLY with a valid JSON object (no markdown, no code fences) in this exact format:
-{
-  "title": "Quiz title here",
-  "topic": "${resolvedTopic}",
-  "questions": [
-    {
-      "question": "Question text here",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": 0
-    }
-  ]
-}
+TOPIC:
+"${prompt}"
 
-correctAnswer is the 0-based index of the correct option. Generate exactly ${resolvedCount} questions.`;
+RULES:
+- Questions MUST strictly belong to this topic
+- DO NOT generate unrelated or general knowledge questions
+- If topic is short or ambiguous, assume its most common meaning
+- Each question must have exactly 4 options
+- Only ONE correct answer
+- Difficulty: ${resolvedDifficulty}
 
-        const result = await model.generateContent(fullPrompt);
-        const text = result.response.text();
+IMPORTANT:
+Return ONLY a JSON array. No explanation, no text, no markdown.
 
-        // Strip markdown code fences if present
-        const cleaned = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+FORMAT:
+[
+  {
+    "question": "Question text",
+    "options": ["A", "B", "C", "D"],
+    "correctAnswer": 0
+  }
+]
+`;
 
-        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error('Failed to parse AI response');
-        }
+      // ✅ Groq API call
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant", // fast + free
+        messages: [
+          {
+            role: "user",
+            content: finalPrompt,
+          },
+        ],
+      });
 
-        const quizData = JSON.parse(jsonMatch[0]);
+      const responseText =
+        completion.choices?.[0]?.message?.content || "";
 
-        res.json({
-            title: quizData.title,
-            topic: quizData.topic,
-            questions: quizData.questions.map((q) => ({
-                question: q.question,
-                options: q.options,
-                correctAnswer: q.correctAnswer,
-            })),
-        });
+      console.log("AI RAW RESPONSE:\n", responseText);
+
+      // ✅ Clean markdown
+      const cleaned = responseText
+        .replace(/```json|```/g, '')
+        .trim();
+
+      // ✅ Extract JSON safely
+      const match = cleaned.match(/\[\s*{[\s\S]*}\s*\]/);
+
+      if (!match) {
+        console.error("AI BAD RESPONSE:\n", cleaned);
+        throw new Error("No valid JSON found");
+      }
+
+      let questions;
+
+      try {
+        questions = JSON.parse(match[0]);
+      } catch (err) {
+        console.error("JSON PARSE ERROR:\n", match[0]);
+        throw err;
+      }
+
+      // ✅ Validate
+      if (!Array.isArray(questions) || questions.length === 0) {
+        throw new Error("Invalid format");
+      }
+
+      return res.json({
+        title: `Quiz: ${resolvedTopic}`,
+        topic: resolvedTopic,
+        difficulty: resolvedDifficulty,
+        questions,
+      });
+
     } catch (error) {
-        console.error('AI generation error:', error);
-        res.status(500).json({ error: error.message || 'AI generation failed' });
+      console.error("Groq AI error:", error);
+
+      return res.json({
+        title: "Error",
+        topic: "Error",
+        questions: [
+          {
+            question: "Failed to generate quiz",
+            options: ["Retry", "Check API", "Server Error", "Unknown"],
+            correctAnswer: 0,
+          },
+        ],
+      });
     }
-});
+  }
+);
 
 export default router;
