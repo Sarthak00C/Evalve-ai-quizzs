@@ -1,19 +1,19 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-dotenv.config();
+import mongoose from "mongoose";
+
 export const connectDB = async () => {
-    try {
-        const mongoURI = process.env.MONGODB_URI;
-        if (!mongoURI) {
-            throw new Error('MONGODB_URI environment variable is not set');
-        }
-        await mongoose.connect(mongoURI);
-        console.log('✅ MongoDB connected successfully');
+  try {
+    const uri = process.env.MONGODB_URI;
+
+    if (!uri) {
+      console.log("❌ MONGODB_URI not found");
+      return;
     }
-    catch (error) {
-        console.error('❌ MongoDB connection error:', error);
-        process.exit(1);
-    }
+
+    await mongoose.connect(uri);
+
+    console.log("✅ MongoDB connected");
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    process.exit(1);
+  }
 };
-export default mongoose;
-//# sourceMappingURL=database.js.map

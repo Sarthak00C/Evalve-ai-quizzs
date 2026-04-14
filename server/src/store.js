@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import dotenv from "dotenv";
+dotenv.config();
 export const useInMemoryDB = !process.env.MONGODB_URI;
 // Debug log
 if (typeof process !== 'undefined') {
