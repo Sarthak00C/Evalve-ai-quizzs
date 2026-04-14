@@ -20,8 +20,11 @@ import JoinQuizPage from "\./pages/JoinQuizPage";
 import QuizAttemptPage from "\./pages/QuizAttemptPage";
 import LeaderboardPage from "\./pages/LeaderboardPage";
 import AnalyticsPage from "\./pages/AnalyticsPage";
-import ProfilePage from "\./pages/ProfilePage";
-import NotFound from "\./pages/NotFound";
+import ProfilePage from "./pages/ProfilePage";
+import MyQuizzesPage from "./pages/MyQuizzesPage";
+import QuizResultsPage from "./pages/QuizResultsPage";
+import LandingPage from "./pages/LandingPage";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -42,8 +45,8 @@ function App() {
             >
               <Routes>
 
-                {/* FIXED: safer default route */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                {/* Modern Landing Page */}
+                <Route path="/" element={<LandingPage />} />
 
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
@@ -53,6 +56,24 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/my-quizzes"
+                  element={
+                    <ProtectedRoute>
+                      <MyQuizzesPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/my-quizzes/:quizId/results"
+                  element={
+                    <ProtectedRoute>
+                      <QuizResultsPage />
                     </ProtectedRoute>
                   }
                 />

@@ -96,6 +96,111 @@ function AnalyticsPage() {
         ))}
       </div>
 
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Score Trend Card */}
+        <Card className="rounded-2xl shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg font-heading flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Score Trend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {scoreHistory.length > 0 ? (
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={scoreHistory}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    />
+                    <YAxis 
+                      domain={[0, 100]} 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      cursor={{ fill: "hsl(var(--muted)/0.5)" }}
+                      contentStyle={{ 
+                        borderRadius: "12px", 
+                        border: "none", 
+                        boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" 
+                      }}
+                    />
+                    <Bar 
+                      dataKey="score" 
+                      fill="hsl(var(--primary))" 
+                      radius={[6, 6, 0, 0]} 
+                      barSize={30}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground italic text-sm">
+                No history available yet
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Accuracy Distribution Card */}
+        <Card className="rounded-2xl shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg font-heading flex items-center gap-2">
+              <Target className="h-5 w-5 text-accent" />
+              Overall Accuracy
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {totalQuestions > 0 ? (
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        borderRadius: "12px", 
+                        border: "none", 
+                        boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" 
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-6 mt-2">
+                  {pieData.map((entry, index) => (
+                    <div key={entry.name} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index] }} />
+                      <span className="text-xs font-medium text-muted-foreground">{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground italic text-sm">
+                No data available yet
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
     </div>
   </AppLayout>
 );

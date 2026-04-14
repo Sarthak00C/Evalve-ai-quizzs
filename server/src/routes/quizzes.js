@@ -7,7 +7,7 @@ import { authenticateToken, authorizeRole } from '../middleware/auth.js';
 import { useInMemoryDB, createQuiz, getQuizzesByUser, findQuizByCode, findQuizById, getQuestionsByQuizId, deleteQuestionsByQuizId, deleteAttemptsByQuizId, deleteQuiz, updateQuiz, getEntityId, } from '../store.js';
 const router = Router();
 // Create quiz
-router.post('/', authenticateToken, authorizeRole(['teacher']), [
+router.post('/', authenticateToken, authorizeRole(['teacher', 'student']), [
     body('title').trim().notEmpty(),
     body('topic').trim().notEmpty(),
     body('difficulty').isIn(['easy', 'medium', 'hard']),
@@ -163,7 +163,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 // Update quiz
-router.put('/:id', authenticateToken, authorizeRole(['teacher']), async (req, res) => {
+router.put('/:id', authenticateToken, authorizeRole(['teacher', 'student']), async (req, res) => {
     try {
         if (!req.user) {
             return res.status(401).json({ error: 'Not authenticated' });
@@ -223,7 +223,7 @@ router.put('/:id', authenticateToken, authorizeRole(['teacher']), async (req, re
     }
 });
 // Delete quiz
-router.delete('/:id', authenticateToken, authorizeRole(['teacher']), async (req, res) => {
+router.delete('/:id', authenticateToken, authorizeRole(['teacher', 'student']), async (req, res) => {
     try {
         if (!req.user) {
             return res.status(401).json({ error: 'Not authenticated' });

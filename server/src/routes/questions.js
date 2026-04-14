@@ -6,7 +6,7 @@ import { authenticateToken, authorizeRole } from '../middleware/auth.js';
 import { useInMemoryDB, findQuizById, getQuestionsByQuizId, addQuestions, findQuestionById, deleteQuestionById, getEntityId, } from '../store.js';
 const router = Router();
 // Add questions to quiz
-router.post('/', authenticateToken, authorizeRole(['teacher']), [
+router.post('/', authenticateToken, authorizeRole(['teacher', 'student']), [
     body('quizId').notEmpty(),
     body('questions').isArray(),
     body('questions.*.questionText').trim().notEmpty(),
@@ -82,7 +82,7 @@ router.get('/quiz/:quizId', authenticateToken, async (req, res) => {
     }
 });
 // Delete question
-router.delete('/:id', authenticateToken, authorizeRole(['teacher']), async (req, res) => {
+router.delete('/:id', authenticateToken, authorizeRole(['teacher', 'student']), async (req, res) => {
     try {
         if (!req.user) {
             return res.status(401).json({ error: 'Not authenticated' });

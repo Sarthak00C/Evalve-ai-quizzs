@@ -30,6 +30,7 @@ import { Button } from "../components/ui/button";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "My Quizzes", url: "/my-quizzes", icon: BookOpen },
   { title: "Create Quiz", url: "/create-quiz", icon: PlusCircle },
   { title: "Join Quiz", url: "/join-quiz", icon: Users },
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
